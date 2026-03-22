@@ -178,30 +178,30 @@ export default function Home() {
       ) : (
         <>
           {/* URL inputs */}
-          <div className="w-full max-w-lg space-y-4">
+          <div className="w-full max-w-lg space-y-3">
             <div className="flex items-center gap-3">
-              <CompanyLogo url={url1} size={32} />
+              {url1 && <CompanyLogo url={url1} size={32} />}
               <input
                 type="url"
                 placeholder="https://anthropic.com"
                 value={url1}
                 onChange={(e) => setUrl1(e.target.value)}
-                className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none transition"
+                className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/30 transition"
               />
             </div>
 
-            <div className="text-center text-2xl font-black text-gray-600 vs-glow">
+            <div className="text-center text-4xl font-black text-gray-500 vs-glow py-1">
               VS
             </div>
 
             <div className="flex items-center gap-3">
-              <CompanyLogo url={url2} size={32} />
+              {url2 && <CompanyLogo url={url2} size={32} />}
               <input
                 type="url"
                 placeholder="https://openai.com"
                 value={url2}
                 onChange={(e) => setUrl2(e.target.value)}
-                className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none transition"
+                className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition"
               />
             </div>
 
@@ -222,14 +222,14 @@ export default function Home() {
                 setUrl1("https://anthropic.com");
                 setUrl2("https://openai.com");
               }}
-              className="w-full text-sm text-gray-500 hover:text-gray-300 transition"
+              className="w-full py-2 text-sm text-gray-400 hover:text-orange-400 transition border border-transparent hover:border-gray-700 rounded-lg"
             >
-              Try: Anthropic vs OpenAI
+              Try: Anthropic vs OpenAI →
             </button>
           </div>
 
           {/* Powered by footer */}
-          <footer className="mt-16 text-center text-xs text-gray-600">
+          <footer className="mt-12 text-center text-sm text-gray-500">
             Built with{" "}
             <a
               href="https://firecrawl.dev"
