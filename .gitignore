@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# production
+build/
+dist/
+
+# env files
+.env
+.env*.local
+
+# local data (generated debates + audio)
+.data/
+
+# public audio (generated, not committed)
+public/audio/
+
+# misc
+.DS_Store
+*.tsbuildinfo
+*.tgz
+bun.lock
+
+# caches
+.cache
+.eslintcache
