@@ -28,3 +28,4 @@ bun.lock
 # caches
 .cache
 .eslintcache
+.gstack/
