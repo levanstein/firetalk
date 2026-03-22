@@ -34,12 +34,11 @@ export async function generateAudio(
     }
   );
 
-  if (res.status === 429) {
-    throw new Error("QUOTA_EXHAUSTED: Voice generation limit reached");
-  }
-
   if (!res.ok) {
     const body = await res.text().catch(() => "");
+    if (res.status === 429 || body.includes("quota_exceeded") || body.includes("quota")) {
+      throw new Error("QUOTA_EXHAUSTED: Voice generation limit reached");
+    }
     throw new Error(
       `AUDIO_ERROR: ElevenLabs returned ${res.status}: ${body.slice(0, 200)}`
     );
