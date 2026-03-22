@@ -7,7 +7,7 @@ const VOICES: Record<string, string> = {
   b: "EXAVITQu4vr4xnSDxMaL", // Sarah - Mature, Reassuring, Confident
 };
 
-const limit = pLimit(3);
+const limit = pLimit(2);
 
 export async function generateAudio(
   text: string,
@@ -63,6 +63,8 @@ export async function generateAllAudio(
           err instanceof Error &&
           !err.message.includes("QUOTA_EXHAUSTED")
         ) {
+          // Wait 2s before retry to avoid rate limits
+          await new Promise((r) => setTimeout(r, 2000));
           return await generateAudio(turn.text, voiceKey as "a" | "b");
         }
         throw err;
