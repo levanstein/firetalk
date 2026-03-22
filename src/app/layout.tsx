@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FireTalk — AI Debate Podcasts",
+  title: "FireTalk — AI Product Battles",
   description:
-    "Drop two company URLs. Watch them battle in an AI-generated debate podcast.",
+    "Compare any two products with AI-powered analysis. Get a detailed comparison, audio breakdown, and verdict.",
   openGraph: {
-    title: "FireTalk — AI Debate Podcasts",
+    title: "FireTalk — AI Product Battles",
     description:
-      "Drop two company URLs. Watch them battle in an AI-generated debate podcast.",
+      "Compare any two products with AI-powered analysis. Audio breakdown + comparison table + verdict.",
     type: "website",
   },
 };

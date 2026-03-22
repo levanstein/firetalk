@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AudioBars } from "@/components/AudioBars";
 import { CompanyLogo } from "@/components/CompanyLogo";
+import type { Debate } from "@/lib/types";
 
 type Step = "idle" | "scraping" | "scripting" | "voicing" | "done" | "error";
 
@@ -19,8 +19,16 @@ export default function Home() {
   const [error, setError] = useState("");
   const [scriptTokens, setScriptTokens] = useState<ScriptToken[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [gallery, setGallery] = useState<Debate[]>([]);
   const tokenIdRef = useRef(0);
   const router = useRouter();
+
+  useEffect(() => {
+    fetch("/api/gallery")
+      .then((r) => r.json())
+      .then((data) => setGallery(data.debates || []))
+      .catch(() => {});
+  }, []);
 
   const isValidUrl = (s: string) => {
     try {
@@ -33,11 +41,11 @@ export default function Home() {
 
   const handleGenerate = async () => {
     if (!isValidUrl(url1) || !isValidUrl(url2)) {
-      setError("Please enter valid URLs for both companies.");
+      setError("Please enter valid URLs for both products.");
       return;
     }
     if (url1 === url2) {
-      setError("Enter two different company URLs.");
+      setError("Enter two different product URLs.");
       return;
     }
 
@@ -106,157 +114,224 @@ export default function Home() {
   };
 
   const stepLabels: Record<string, string> = {
-    scraping: "Researching companies...",
-    scripting: "Writing the debate script...",
-    voicing: "Generating AI voices...",
-    done: "Battle ready!",
+    scraping: "Analyzing products...",
+    scripting: "Writing product analysis...",
+    voicing: "Generating audio breakdown...",
+    done: "Product Battle ready!",
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-4 py-16">
-      {/* Hero */}
-      <div className="text-center mb-12">
-        <h1 className="text-6xl font-black tracking-tight mb-4">
-          <span className="text-orange-500">Fire</span>
-          <span className="text-blue-500">Talk</span>
-        </h1>
-        <p className="text-xl text-gray-400 max-w-lg mx-auto">
-          AI debate podcasts. Drop company URLs. Watch them battle.
-        </p>
-      </div>
+    <main className="min-h-screen">
+      {/* Hero Section */}
+      <div className="flex flex-col items-center justify-center px-4 pt-20 pb-16">
+        <div className="text-center mb-10">
+          <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-3">
+            <span className="text-orange-500 fire-glow-text">Fire</span>
+            <span className="text-zinc-100">Talk</span>
+          </h1>
+          <p className="text-lg text-zinc-400 max-w-md mx-auto">
+            AI-powered product comparisons. Drop two URLs. Get an audio breakdown, comparison table, and verdict.
+          </p>
+        </div>
 
-      {/* Generation in progress */}
-      {generating && step !== "idle" && step !== "error" ? (
-        <div className="w-full max-w-2xl">
-          {/* Progress stepper */}
-          <div className="flex items-center justify-center gap-3 mb-8">
-            {["scraping", "scripting", "voicing", "done"].map((s, i) => (
-              <div key={s} className="flex items-center gap-3">
-                <div
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    step === s
-                      ? "bg-orange-500 scale-125 animate-pulse"
-                      : ["scraping", "scripting", "voicing", "done"].indexOf(
-                            step
-                          ) > i
-                        ? "bg-orange-500"
-                        : "bg-gray-700"
-                  }`}
-                />
-                {i < 3 && (
+        {/* Generation in progress */}
+        {generating && step !== "idle" && step !== "error" ? (
+          <div className="w-full max-w-2xl">
+            {/* Company logos during generation */}
+            <div className="flex items-center justify-center gap-6 mb-6">
+              <CompanyLogo url={url1} size={48} />
+              <span className="text-2xl font-black text-zinc-600">vs</span>
+              <CompanyLogo url={url2} size={48} />
+            </div>
+
+            {/* Progress stepper */}
+            <div className="flex items-center justify-center gap-2 mb-6">
+              {["scraping", "scripting", "voicing", "done"].map((s, i) => (
+                <div key={s} className="flex items-center gap-2">
                   <div
-                    className={`w-12 h-0.5 ${
-                      ["scraping", "scripting", "voicing", "done"].indexOf(
-                        step
-                      ) > i
-                        ? "bg-orange-500"
-                        : "bg-gray-700"
+                    className={`w-2.5 h-2.5 rounded-full transition-all ${
+                      step === s
+                        ? "bg-orange-500 scale-125 animate-pulse"
+                        : ["scraping", "scripting", "voicing", "done"].indexOf(step) > i
+                          ? "bg-orange-500"
+                          : "bg-zinc-700"
                     }`}
                   />
-                )}
+                  {i < 3 && (
+                    <div
+                      className={`w-8 h-0.5 ${
+                        ["scraping", "scripting", "voicing", "done"].indexOf(step) > i
+                          ? "bg-orange-500"
+                          : "bg-zinc-700"
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <p className="text-center text-zinc-300 text-sm mb-4">
+              {stepLabels[step] || "Processing..."}
+            </p>
+
+            {/* Streaming script preview */}
+            {scriptTokens.length > 0 && (
+              <div className="bg-zinc-900 rounded-lg p-5 max-h-48 overflow-y-auto border border-zinc-800">
+                <p className="text-sm text-zinc-400 leading-relaxed font-mono">
+                  {scriptTokens.map((t) => (
+                    <span key={t.id} className="typing-word inline">
+                      {t.text}
+                    </span>
+                  ))}
+                </p>
               </div>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* URL inputs */}
+            <div className="w-full max-w-lg space-y-3">
+              <div className="flex items-center gap-3">
+                {url1 && <CompanyLogo url={url1} size={36} />}
+                <input
+                  type="url"
+                  placeholder="https://product-a.com"
+                  value={url1}
+                  onChange={(e) => setUrl1(e.target.value)}
+                  className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-600 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/20 transition"
+                />
+              </div>
+
+              <div className="text-center text-xl font-black text-zinc-600 py-0.5">
+                vs
+              </div>
+
+              <div className="flex items-center gap-3">
+                {url2 && <CompanyLogo url={url2} size={36} />}
+                <input
+                  type="url"
+                  placeholder="https://product-b.com"
+                  value={url2}
+                  onChange={(e) => setUrl2(e.target.value)}
+                  className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-600 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/20 transition"
+                />
+              </div>
+
+              {error && (
+                <p className="text-red-400 text-sm text-center">{error}</p>
+              )}
+
+              <button
+                onClick={handleGenerate}
+                disabled={generating}
+                className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg text-base disabled:opacity-50 disabled:cursor-not-allowed transition-all fire-glow"
+              >
+                Generate Product Battle
+              </button>
+
+              <button
+                onClick={() => {
+                  setUrl1("https://anthropic.com");
+                  setUrl2("https://openai.com");
+                }}
+                className="w-full py-2 text-sm text-zinc-500 hover:text-orange-400 transition"
+              >
+                Try: Anthropic vs OpenAI
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Gallery Section */}
+      {gallery.length > 0 && !generating && (
+        <section className="px-4 pb-16 max-w-4xl mx-auto">
+          <h2 className="text-lg font-semibold text-zinc-300 mb-4">
+            Recent Product Battles
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {gallery.map((battle) => (
+              <a
+                key={battle.slug}
+                href={`/battle/${battle.slug}`}
+                className="flex items-center gap-4 p-4 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition group"
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <CompanyLogo url={battle.companyA.url} size={28} />
+                  <span className="text-sm font-medium text-zinc-200 truncate">
+                    {battle.companyA.name}
+                  </span>
+                </div>
+                <span className="text-xs font-bold text-zinc-600 shrink-0">
+                  vs
+                </span>
+                <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+                  <span className="text-sm font-medium text-zinc-200 truncate">
+                    {battle.companyB.name}
+                  </span>
+                  <CompanyLogo url={battle.companyB.url} size={28} />
+                </div>
+                <svg
+                  className="w-4 h-4 text-zinc-600 group-hover:text-orange-500 transition shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </a>
             ))}
           </div>
-
-          <p className="text-center text-gray-300 mb-6">
-            {stepLabels[step] || "Processing..."}
-          </p>
-
-          {/* Streaming script preview */}
-          {scriptTokens.length > 0 && (
-            <div className="bg-gray-900 rounded-xl p-6 max-h-64 overflow-y-auto border border-gray-800">
-              <p className="text-sm text-gray-300 leading-relaxed">
-                {scriptTokens.map((t) => (
-                  <span key={t.id} className="typing-word inline">
-                    {t.text}
-                  </span>
-                ))}
-              </p>
-            </div>
-          )}
-        </div>
-      ) : (
-        <>
-          {/* URL inputs */}
-          <div className="w-full max-w-lg space-y-3">
-            <div className="flex items-center gap-3">
-              {url1 && <CompanyLogo url={url1} size={32} />}
-              <input
-                type="url"
-                placeholder="https://anthropic.com"
-                value={url1}
-                onChange={(e) => setUrl1(e.target.value)}
-                className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/30 transition"
-              />
-            </div>
-
-            <div className="text-center text-4xl font-black text-gray-500 vs-glow py-1">
-              VS
-            </div>
-
-            <div className="flex items-center gap-3">
-              {url2 && <CompanyLogo url={url2} size={32} />}
-              <input
-                type="url"
-                placeholder="https://openai.com"
-                value={url2}
-                onChange={(e) => setUrl2(e.target.value)}
-                className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition"
-              />
-            </div>
-
-            {error && (
-              <p className="text-red-400 text-sm text-center">{error}</p>
-            )}
-
-            <button
-              onClick={handleGenerate}
-              disabled={generating}
-              className="w-full py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold rounded-lg text-lg hover:from-orange-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {generating ? "Generating..." : "🔥 Generate Battle"}
-            </button>
-
-            <button
-              onClick={() => {
-                setUrl1("https://anthropic.com");
-                setUrl2("https://openai.com");
-              }}
-              className="w-full py-2 text-sm text-gray-400 hover:text-orange-400 transition border border-transparent hover:border-gray-700 rounded-lg"
-            >
-              Try: Anthropic vs OpenAI →
-            </button>
-          </div>
-
-          {/* Powered by footer */}
-          <footer className="mt-12 text-center text-sm text-gray-500">
-            Built with{" "}
-            <a
-              href="https://firecrawl.dev"
-              className="text-orange-500 hover:underline"
-              target="_blank"
-            >
-              Firecrawl
-            </a>{" "}
-            +{" "}
-            <a
-              href="https://elevenlabs.io"
-              className="text-blue-500 hover:underline"
-              target="_blank"
-            >
-              ElevenLabs
-            </a>{" "}
-            for{" "}
-            <a
-              href="https://hacks.elevenlabs.io"
-              className="hover:underline"
-              target="_blank"
-            >
-              #ElevenHacks
-            </a>
-          </footer>
-        </>
+        </section>
       )}
+
+      {/* Footer */}
+      <footer className="px-4 pb-8 text-center">
+        <div className="flex items-center justify-center gap-4 text-sm text-zinc-500">
+          <span>Built with</span>
+          <a
+            href="https://firecrawl.dev"
+            target="_blank"
+            className="flex items-center gap-1.5 hover:text-orange-400 transition"
+          >
+            <img
+              src="https://raw.githubusercontent.com/mendableai/firecrawl/main/img/firecrawl_logo.png"
+              alt="Firecrawl"
+              className="h-4 w-4"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+            Firecrawl
+          </a>
+          <span>+</span>
+          <a
+            href="https://elevenlabs.io"
+            target="_blank"
+            className="flex items-center gap-1.5 hover:text-orange-400 transition"
+          >
+            <img
+              src="https://avatars.githubusercontent.com/u/101422956"
+              alt="ElevenLabs"
+              className="h-4 w-4 rounded"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+            ElevenLabs
+          </a>
+        </div>
+        <p className="text-xs text-zinc-600 mt-2">
+          <a href="https://hacks.elevenlabs.io" target="_blank" className="hover:text-zinc-400 transition">
+            #ElevenHacks
+          </a>
+        </p>
+      </footer>
     </main>
   );
 }

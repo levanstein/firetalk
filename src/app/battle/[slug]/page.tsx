@@ -13,11 +13,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!debate) return { title: "Not Found — FireTalk" };
 
   return {
-    title: `${debate.companyA.name} vs ${debate.companyB.name} — FireTalk`,
-    description: `Watch ${debate.companyA.name} and ${debate.companyB.name} battle in an AI-generated debate podcast. Who wins? Vote now.`,
+    title: `${debate.companyA.name} vs ${debate.companyB.name} — FireTalk Product Battle`,
+    description: `AI-powered comparison of ${debate.companyA.name} and ${debate.companyB.name}. Listen to the audio breakdown, see the comparison table, and vote for your winner.`,
     openGraph: {
-      title: `${debate.companyA.name} vs ${debate.companyB.name} — FireTalk AI Debate`,
-      description: `Watch ${debate.companyA.name} and ${debate.companyB.name} battle it out in an AI-generated debate podcast. Who wins? Vote now.`,
+      title: `${debate.companyA.name} vs ${debate.companyB.name} — FireTalk`,
+      description: `AI product comparison: ${debate.companyA.name} vs ${debate.companyB.name}. Audio breakdown + comparison table + verdict.`,
       type: "website",
     },
   };

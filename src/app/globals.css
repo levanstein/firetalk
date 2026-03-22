@@ -1,53 +1,59 @@
 @import "tailwindcss";
 
+/*
+ * FireTalk Design System — inspired by Firecrawl's dark, clean aesthetic
+ * Primary: Orange (#f97316) — action, fire, energy
+ * Secondary: Slate (#64748b) — neutral, professional
+ * Background: Near-black (#09090b) — deep, focused
+ * Surface: Dark gray (#18181b) — cards, elevated elements
+ * Border: (#27272a) — subtle separation
+ */
+
 :root {
   --color-fire: #f97316;
-  --color-ice: #3b82f6;
-  --color-dark: #0a0a0a;
-  --color-darker: #050505;
+  --color-fire-dim: #ea580c;
+  --color-surface: #18181b;
+  --color-border: #27272a;
+  --color-bg: #09090b;
+  --color-text: #fafafa;
+  --color-text-muted: #a1a1aa;
+  --color-text-dim: #71717a;
 }
 
 body {
-  background: var(--color-darker);
-  color: #e5e5e5;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-@keyframes pulse-bar {
-  0%,
-  100% {
-    transform: scaleY(0.3);
-  }
-  50% {
-    transform: scaleY(1);
-  }
+/* Waveform animation */
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.4); }
+  25% { transform: scaleY(1.0); }
+  50% { transform: scaleY(0.6); }
+  75% { transform: scaleY(0.8); }
 }
 
-.audio-bar {
-  animation: pulse-bar 0.8s ease-in-out infinite;
+.wave-bar {
+  animation: wave 1.2s ease-in-out infinite;
 }
 
-.audio-bar:nth-child(2) {
-  animation-delay: 0.1s;
-}
-.audio-bar:nth-child(3) {
-  animation-delay: 0.2s;
-}
-.audio-bar:nth-child(4) {
-  animation-delay: 0.3s;
-}
-.audio-bar:nth-child(5) {
-  animation-delay: 0.15s;
+.wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { animation-delay: 0.3s; }
+.wave-bar:nth-child(5) { animation-delay: 0.15s; }
+.wave-bar:nth-child(6) { animation-delay: 0.25s; }
+.wave-bar:nth-child(7) { animation-delay: 0.05s; }
+.wave-bar:nth-child(8) { animation-delay: 0.35s; }
+
+.wave-bar-static {
+  transform: scaleY(0.3);
 }
 
+/* Typing animation */
 @keyframes typing {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .typing-word {
@@ -55,7 +61,11 @@ body {
   opacity: 0;
 }
 
-.vs-glow {
-  text-shadow: 0 0 40px rgba(249, 115, 22, 0.5),
-    0 0 80px rgba(249, 115, 22, 0.3);
+/* Glow effects */
+.fire-glow {
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
+}
+
+.fire-glow-text {
+  text-shadow: 0 0 30px rgba(249, 115, 22, 0.4);
 }

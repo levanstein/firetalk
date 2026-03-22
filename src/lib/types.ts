@@ -12,12 +12,21 @@ export interface DebateTurn {
   text: string;
 }
 
+export interface ComparisonRow {
+  criterion: string;
+  productA: string;
+  productB: string;
+  verdict: "A" | "B" | "Tie";
+}
+
 export interface DebateScript {
   companyA: { name: string; speaker: string };
   companyB: { name: string; speaker: string };
   turns: DebateTurn[];
   bestQuoteA: string;
   bestQuoteB: string;
+  comparison: ComparisonRow[];
+  summary: string;
 }
 
 export interface Debate {
@@ -27,6 +36,8 @@ export interface Debate {
   transcript: DebateTurn[];
   bestQuoteA: string;
   bestQuoteB: string;
+  comparison: ComparisonRow[];
+  summary: string;
   audioUrls: string[];
   votesA: number;
   votesB: number;

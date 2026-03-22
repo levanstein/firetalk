@@ -93,6 +93,8 @@ export async function POST(req: NextRequest) {
           transcript: script.turns,
           bestQuoteA: script.bestQuoteA,
           bestQuoteB: script.bestQuoteB,
+          comparison: script.comparison || [],
+          summary: script.summary || "",
           audioUrls,
           votesA: 0,
           votesB: 0,
