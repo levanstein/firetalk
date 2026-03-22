@@ -34,7 +34,7 @@ export function CompanyLogo({
 
   return (
     <img
-      src={`https://logo.clearbit.com/${domain}`}
+      src={`https://www.google.com/s2/favicons?sz=128&domain=${domain}`}
       alt={domain}
       width={size}
       height={size}
