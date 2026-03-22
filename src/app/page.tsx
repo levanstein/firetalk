@@ -300,12 +300,9 @@ export default function Home() {
             className="flex items-center gap-1.5 hover:text-orange-400 transition"
           >
             <img
-              src="https://raw.githubusercontent.com/mendableai/firecrawl/main/img/firecrawl_logo.png"
+              src="https://www.google.com/s2/favicons?sz=32&domain=firecrawl.dev"
               alt="Firecrawl"
-              className="h-4 w-4"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
+              className="h-4 w-4 rounded-sm"
             />
             Firecrawl
           </a>
@@ -316,12 +313,9 @@ export default function Home() {
             className="flex items-center gap-1.5 hover:text-orange-400 transition"
           >
             <img
-              src="https://avatars.githubusercontent.com/u/101422956"
+              src="https://www.google.com/s2/favicons?sz=32&domain=elevenlabs.io"
               alt="ElevenLabs"
-              className="h-4 w-4 rounded"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
+              className="h-4 w-4 rounded-sm"
             />
             ElevenLabs
           </a>
