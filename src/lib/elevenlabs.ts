@@ -3,8 +3,8 @@ import pLimit from "p-limit";
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY!;
 
 const VOICES: Record<string, string> = {
-  a: "pNInz6obpgDQGcFmaJgB", // Adam - deep male
-  b: "21m00Tcm4TlvDq8ikWAM", // Rachel - confident female
+  a: "onwK4e9ZLuTAKqWW03F9", // Daniel - Steady Broadcaster
+  b: "EXAVITQu4vr4xnSDxMaL", // Sarah - Mature, Reassuring, Confident
 };
 
 const limit = pLimit(3);

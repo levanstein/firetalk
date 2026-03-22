@@ -117,6 +117,7 @@ export async function POST(req: NextRequest) {
         } else if (message.includes("RATE_LIMIT")) {
           send("error", { message: "Too many requests. Try again in a moment." });
         } else {
+          console.error("[generate] Unexpected error:", message);
           send("error", { message: "Something went wrong. Please try again." });
         }
       } finally {
