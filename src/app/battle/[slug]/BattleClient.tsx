@@ -109,20 +109,24 @@ export function BattleClient({ debate }: { debate: Debate }) {
           </button>
 
           {/* Waveform visualization */}
-          <div className="flex-1 flex items-end justify-center gap-[3px] h-12">
-            {Array.from({ length: 40 }).map((_, i) => {
-              const height = 20 + Math.sin(i * 0.7) * 15 + Math.cos(i * 1.3) * 10;
+          <div className="flex-1 flex items-center justify-center gap-[2px] h-14">
+            {Array.from({ length: 50 }).map((_, i) => {
+              // Create a natural waveform shape — louder in the middle, quieter at edges
+              const position = i / 50;
+              const envelope = Math.sin(position * Math.PI) * 0.7 + 0.3;
+              const detail = Math.sin(i * 0.8) * 0.3 + Math.cos(i * 1.5) * 0.2 + Math.sin(i * 2.3) * 0.1;
+              const height = (envelope + detail) * 100;
               return (
                 <div
                   key={i}
-                  className={`w-[3px] rounded-full transition-colors ${
+                  className={`w-[2.5px] rounded-full transition-all duration-300 ${
                     playing
                       ? "bg-orange-500 wave-bar"
-                      : "bg-zinc-700 wave-bar-static"
+                      : "bg-zinc-600 wave-bar-static"
                   }`}
                   style={{
-                    height: `${Math.max(8, height)}%`,
-                    animationDelay: `${i * 0.05}s`,
+                    height: `${Math.max(12, Math.min(95, height))}%`,
+                    animationDelay: `${i * 0.04}s`,
                   }}
                 />
               );
