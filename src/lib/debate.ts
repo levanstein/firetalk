@@ -55,7 +55,7 @@ Output the debate script as JSON.`;
   let fullResponse = "";
 
   const stream = anthropic.messages.stream({
-    model: "anthropic.claude-sonnet-4-20250514-v1:0",
+    model: "us.anthropic.claude-sonnet-4-20250514-v1:0",
     max_tokens: 4096,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: userPrompt }],
