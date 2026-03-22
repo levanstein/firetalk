@@ -85,10 +85,11 @@ export function BattleClient({ debate }: { debate: Debate }) {
   };
 
   const shareText = `I just watched ${debate.companyA.name} vs ${debate.companyB.name} debate on FireTalk — ${debate.companyA.name} is ${pctA > pctB ? "winning" : "losing"} ${pctA}% to ${pctB}%! #ElevenHacks @firecrawl @elevenlabs`;
-  const shareUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/battle/${debate.slug}`
-      : "";
+  const [shareUrl, setShareUrl] = useState(`/battle/${debate.slug}`);
+
+  useEffect(() => {
+    setShareUrl(`${window.location.origin}/battle/${debate.slug}`);
+  }, [debate.slug]);
 
   return (
     <main className="min-h-screen px-4 py-8 max-w-2xl mx-auto">
