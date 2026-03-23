@@ -1,29 +1,35 @@
 @import "tailwindcss";
 
 /*
- * FireTalk Design System — inspired by Firecrawl's dark, clean aesthetic
+ * FireTalk v2 Design System — Firecrawl.dev-inspired light theme
  * Primary: Orange (#f97316) — action, fire, energy
- * Secondary: Slate (#64748b) — neutral, professional
- * Background: Near-black (#09090b) — deep, focused
- * Surface: Dark gray (#18181b) — cards, elevated elements
- * Border: (#27272a) — subtle separation
+ * Background: Off-white (#f9f9f9) — clean, professional
+ * Surface: White (#ffffff) — cards, elevated elements
+ * Border: Light gray (#e5e7eb) — subtle separation
+ * Text: Near-black (#1a1a1a) — high contrast
  */
 
 :root {
   --color-fire: #f97316;
   --color-fire-dim: #ea580c;
-  --color-surface: #18181b;
-  --color-border: #27272a;
-  --color-bg: #09090b;
-  --color-text: #fafafa;
-  --color-text-muted: #a1a1aa;
-  --color-text-dim: #71717a;
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb;
+  --color-bg: #f9f9f9;
+  --color-text: #1a1a1a;
+  --color-text-muted: #6b7280;
+  --color-text-dim: #9ca3af;
 }
 
 body {
   background: var(--color-bg);
   color: var(--color-text);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Subtle dot grid background pattern */
+.dot-grid {
+  background-image: radial-gradient(circle, #d1d5db 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
 }
 
 /* Waveform animation */
@@ -68,5 +74,49 @@ body {
 }
 
 .fire-glow-text {
-  text-shadow: 0 0 30px rgba(249, 115, 22, 0.4);
+  text-shadow: 0 0 30px rgba(249, 115, 22, 0.3);
+}
+
+/* Battle intro animation */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes vsFlash {
+  0% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.battle-intro-left {
+  animation: slideInLeft 0.5s ease-out forwards;
+}
+
+.battle-intro-right {
+  animation: slideInRight 0.5s ease-out forwards;
+  animation-delay: 0.15s;
+  opacity: 0;
+}
+
+.battle-intro-vs {
+  animation: vsFlash 0.4s ease-out forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+.battle-intro-content {
+  animation: fadeInUp 0.5s ease-out forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
 }
