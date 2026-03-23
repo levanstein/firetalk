@@ -12,13 +12,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const debate = await getDebate(slug);
   if (!debate) return { title: "Not Found — FireTalk" };
 
+  const title = `${debate.companyA.name} vs ${debate.companyB.name} — FireTalk Product Battle`;
+  const description = `AI-powered comparison of ${debate.companyA.name} and ${debate.companyB.name}. Listen to the audio debate, see the comparison table, and vote for your winner. Based on real internet data from ${(debate.sources || []).length} sources.`;
+
   return {
-    title: `${debate.companyA.name} vs ${debate.companyB.name} — FireTalk Product Battle`,
-    description: `AI-powered comparison of ${debate.companyA.name} and ${debate.companyB.name}. Listen to the audio breakdown, see the comparison table, and vote for your winner.`,
+    title,
+    description,
     openGraph: {
-      title: `${debate.companyA.name} vs ${debate.companyB.name} — FireTalk`,
-      description: `AI product comparison: ${debate.companyA.name} vs ${debate.companyB.name}. Audio breakdown + comparison table + verdict.`,
-      type: "website",
+      title,
+      description,
+      type: "article",
+      images: [`/api/og/${slug}`],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`/api/og/${slug}`],
     },
   };
 }
