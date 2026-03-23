@@ -47,14 +47,20 @@ async function firecrawlSearch(query: string, limit = 3): Promise<{ url: string;
       body: JSON.stringify({ query, limit }),
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.warn(`[firecrawl] Search failed: ${res.status} ${res.statusText} for query: ${query}`);
+      const body = await res.text().catch(() => "");
+      console.warn(`[firecrawl] Response body: ${body.slice(0, 200)}`);
+      return [];
+    }
 
     const json = await res.json();
     return (json.data || []).map((r: { url: string; title: string }) => ({
       url: r.url,
       title: r.title || "",
     }));
-  } catch {
+  } catch (err) {
+    console.warn(`[firecrawl] Search error for query "${query}":`, err);
     return [];
   }
 }
@@ -87,7 +93,12 @@ export async function resolveInput(input: string): Promise<{ url: string; name: 
     return { url: input, name: extractDomain(input) };
   }
 
-  const results = await firecrawlSearch(`${input} official site`, 1);
+  // Try search with retry (cold start can cause first request to fail)
+  let results = await firecrawlSearch(`${input} official site`, 1);
+  if (results.length === 0) {
+    // Retry with simpler query
+    results = await firecrawlSearch(input, 1);
+  }
   if (results.length === 0) {
     throw new Error(`RESOLVE_FAILED: Could not find a website for "${input}". Try entering a URL instead.`);
   }
