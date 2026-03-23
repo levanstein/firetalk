@@ -188,29 +188,55 @@ export async function scrapeCompany(
   const allContent = [siteContent, reviewContent].filter(Boolean).join("\n\n=== INDEPENDENT REVIEWS ===\n\n");
   const wordCount = allContent.split(/\s+/).filter(Boolean).length;
 
-  // Fallback: try bare homepage if too little content
-  if (wordCount < MIN_WORD_COUNT && url !== baseUrl && url !== `${baseUrl}/`) {
+  // Fallback 1: try bare homepage if too little content
+  let finalContent = allContent;
+  let finalWordCount = wordCount;
+  let fallbackHomepage = homepageContent;
+
+  if (finalWordCount < MIN_WORD_COUNT && url !== baseUrl && url !== `${baseUrl}/`) {
     const fallback = await scrapeSinglePage(baseUrl);
     if (fallback) {
-      const combined = [allContent, fallback].filter(Boolean).join("\n\n---\n\n");
-      const combinedWords = combined.split(/\s+/).filter(Boolean).length;
-      if (combinedWords >= MIN_WORD_COUNT) {
-        return buildResult({ url, domain, content: combined, wordCount: combinedWords, homepageContent: homepageContent || fallback, sources });
+      finalContent = [finalContent, fallback].filter(Boolean).join("\n\n---\n\n");
+      finalWordCount = finalContent.split(/\s+/).filter(Boolean).length;
+      if (!fallbackHomepage) fallbackHomepage = fallback;
+    }
+  }
+
+  // Fallback 2: if still too little, use Firecrawl search to find content ABOUT the product
+  if (finalWordCount < MIN_WORD_COUNT) {
+    onStep?.(`${domain} blocked scraping, searching for alternative content...`);
+    const searchResults = await firecrawlSearch(`${resolvedName || domain} product features pricing review`, 2);
+    const altResults = searchResults.filter((r) => !r.url.includes(domain));
+
+    for (const alt of altResults) {
+      const altContent = await scrapeSinglePage(alt.url);
+      if (altContent && altContent.split(/\s+/).filter(Boolean).length > 50) {
+        finalContent = [finalContent, altContent].filter(Boolean).join("\n\n---\n\n");
+        finalWordCount = finalContent.split(/\s+/).filter(Boolean).length;
+        if (!fallbackHomepage) fallbackHomepage = altContent;
+        sources.push({
+          name: alt.title.split(/[|\-–—]/)[0]?.trim() || extractDomain(alt.url),
+          url: alt.url,
+          domain: extractDomain(alt.url),
+          excerpt: extractExcerpt(altContent),
+          type: "review",
+        });
+        if (finalWordCount >= MIN_WORD_COUNT) break;
       }
     }
   }
 
-  if (wordCount < MIN_WORD_COUNT) {
+  if (finalWordCount < MIN_WORD_COUNT) {
     throw new Error(
-      `INSUFFICIENT_DATA: Could not gather enough content from ${domain} (only ${wordCount} words scraped). ` +
-      `This can happen when a site blocks scrapers or loads content dynamically. ` +
-      `Try a different URL — for example the /about or /pricing page directly.`
+      `INSUFFICIENT_DATA: Could not gather enough content about ${resolvedName || domain} (only ${finalWordCount} words found). ` +
+      `This site blocks scrapers and no alternative content was found. ` +
+      `Try a different product or enter a specific URL like a /pricing or /about page.`
     );
   }
 
   // Extract company name from homepage
   let companyName = resolvedName || domain;
-  const firstLine = (homepageContent || siteContent).split("\n").find((l) => l.startsWith("#"));
+  const firstLine = (fallbackHomepage || siteContent).split("\n").find((l) => l.startsWith("#"));
   if (firstLine) {
     companyName = firstLine.replace(/^#+\s*/, "").split(/[|\-–—]/)[0]?.trim() || companyName;
   }
@@ -219,8 +245,8 @@ export async function scrapeCompany(
     companyName,
     url,
     domain,
-    content: allContent.slice(0, 20000),
-    wordCount,
+    content: finalContent.slice(0, 20000),
+    wordCount: finalWordCount,
     sources,
   };
 }

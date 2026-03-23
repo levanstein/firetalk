@@ -85,8 +85,10 @@ export async function POST(req: NextRequest) {
         // Step 1: Scrape both companies in parallel (with multi-source)
         send("step", { step: "scraping", detail: "Scraping product websites..." });
 
-        const otherName1 = name2 || new URL(url2).hostname.replace("www.", "");
-        const otherName2 = name1 || new URL(url1).hostname.replace("www.", "");
+        let otherName1 = name2;
+        let otherName2 = name1;
+        try { otherName1 = otherName1 || new URL(url2).hostname.replace("www.", ""); } catch { otherName1 = input2; }
+        try { otherName2 = otherName2 || new URL(url1).hostname.replace("www.", ""); } catch { otherName2 = input1; }
 
         const [dataA, dataB] = await Promise.all([
           scrapeCompany(url1, otherName1, (msg) => send("step", { step: "scraping", detail: msg })),
