@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "FireTalk — AI Product Battles",
   description:
     "Compare any two products with AI-powered analysis. Get a detailed comparison, audio breakdown, and verdict.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+  },
   openGraph: {
     title: "FireTalk — AI Product Battles",
     description:
