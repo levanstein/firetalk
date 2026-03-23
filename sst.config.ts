@@ -37,6 +37,10 @@ export default $config({
           resources: ["*"],
         },
       ],
+      server: {
+        timeout: "120 seconds",
+        memory: "1024 MB",
+      },
     });
   },
 });
