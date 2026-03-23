@@ -91,7 +91,7 @@ export function BattleClient({ debate }: { debate: Debate }) {
         </div>
       </div>
 
-      <div className="battle-intro-content">
+      <div>
         {/* Audio Player with Waveform */}
         <div className="bg-white rounded-2xl p-5 mb-4 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">

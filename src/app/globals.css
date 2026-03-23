@@ -95,7 +95,7 @@ body {
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0.01; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -106,17 +106,34 @@ body {
 .battle-intro-right {
   animation: slideInRight 0.5s ease-out forwards;
   animation-delay: 0.15s;
-  opacity: 0;
 }
 
 .battle-intro-vs {
   animation: vsFlash 0.4s ease-out forwards;
   animation-delay: 0.3s;
-  opacity: 0;
 }
 
 .battle-intro-content {
   animation: fadeInUp 0.5s ease-out forwards;
   animation-delay: 0.5s;
-  opacity: 0;
+}
+
+/* Fallback: ensure content is visible even if animation doesn't fire */
+@media (prefers-reduced-motion: reduce) {
+  .battle-intro-left,
+  .battle-intro-right,
+  .battle-intro-vs,
+  .battle-intro-content {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Ensure animated elements become visible after animation completes (SSR safety) */
+.battle-intro-left,
+.battle-intro-right,
+.battle-intro-vs,
+.battle-intro-content {
+  animation-fill-mode: forwards;
 }
