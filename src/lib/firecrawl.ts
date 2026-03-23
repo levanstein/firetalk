@@ -1,31 +1,38 @@
 import type { ScrapedData } from "./types";
 
 const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY!;
-const MIN_WORD_COUNT = 100;
+const MIN_WORD_COUNT = 30;
 
 const SUBPAGES = ["/pricing", "/about", "/features", "/product"];
 
 async function scrapeSinglePage(url: string): Promise<string> {
-  const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-    },
-    body: JSON.stringify({
-      url,
-      formats: ["markdown"],
-    }),
-  });
+  try {
+    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+      },
+      body: JSON.stringify({
+        url,
+        formats: ["markdown"],
+      }),
+    });
 
-  if (res.status === 429) {
-    throw new Error(`RATE_LIMIT: Firecrawl rate limit hit for ${url}`);
+    if (res.status === 429) {
+      throw new Error(`RATE_LIMIT: Firecrawl rate limit hit for ${url}`);
+    }
+
+    if (!res.ok) return "";
+
+    const json = await res.json();
+    return json.data?.markdown || "";
+  } catch (err) {
+    // Re-throw rate limits, swallow everything else so other pages can still contribute
+    if (err instanceof Error && err.message.startsWith("RATE_LIMIT")) throw err;
+    console.warn(`[firecrawl] Failed to scrape ${url}:`, err);
+    return "";
   }
-
-  if (!res.ok) return "";
-
-  const json = await res.json();
-  return json.data?.markdown || "";
 }
 
 export async function scrapeCompany(url: string): Promise<ScrapedData> {
@@ -33,48 +40,93 @@ export async function scrapeCompany(url: string): Promise<ScrapedData> {
   const domain = parsedUrl.hostname.replace("www.", "");
   const baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}`;
 
-  // Scrape homepage + subpages in parallel for richer data
-  const pagesToScrape = [
-    url,
-    ...SUBPAGES.map((p) => `${baseUrl}${p}`),
-  ];
+  // 1) Scrape the provided URL first
+  const homepageContent = await scrapeSinglePage(url);
+  const homepageWords = homepageContent.split(/\s+/).filter(Boolean).length;
 
-  const results = await Promise.allSettled(
-    pagesToScrape.map((pageUrl) => scrapeSinglePage(pageUrl))
+  // 2) If the homepage alone has enough content, also try subpages for richer data.
+  //    If it has very little, still try subpages — they may have more.
+  const subpageResults = await Promise.allSettled(
+    SUBPAGES.map((p) => scrapeSinglePage(`${baseUrl}${p}`))
   );
 
-  const allContent = results
+  const subpageContent = subpageResults
     .filter(
       (r): r is PromiseFulfilledResult<string> =>
         r.status === "fulfilled" && r.value.length > 0
     )
-    .map((r) => r.value)
-    .join("\n\n---\n\n");
+    .map((r) => r.value);
 
+  // Combine all content: homepage first, then subpages
+  const allParts = [homepageContent, ...subpageContent].filter(Boolean);
+  const allContent = allParts.join("\n\n---\n\n");
   const wordCount = allContent.split(/\s+/).filter(Boolean).length;
+
+  // 3) If still too little, try the bare homepage (no path) as a last-resort fallback
+  if (wordCount < MIN_WORD_COUNT && url !== baseUrl && url !== `${baseUrl}/`) {
+    console.warn(
+      `[firecrawl] Only ${wordCount} words from ${url} + subpages, trying bare homepage ${baseUrl}`
+    );
+    const fallback = await scrapeSinglePage(baseUrl);
+    if (fallback) {
+      const combined = [allContent, fallback].filter(Boolean).join("\n\n---\n\n");
+      const combinedWords = combined.split(/\s+/).filter(Boolean).length;
+      if (combinedWords >= MIN_WORD_COUNT) {
+        return buildResult({
+          url,
+          domain,
+          content: combined,
+          wordCount: combinedWords,
+          homepageContent: homepageContent || fallback,
+        });
+      }
+    }
+  }
 
   if (wordCount < MIN_WORD_COUNT) {
     throw new Error(
-      `INSUFFICIENT_DATA: Not enough content found on ${url} (${wordCount} words). Try a different URL.`
+      `INSUFFICIENT_DATA: Could not gather enough content from ${domain} (only ${wordCount} words scraped). ` +
+        `This can happen when a site blocks scrapers or loads content dynamically. ` +
+        `Try a different URL — for example the /about or /pricing page directly.`
     );
   }
 
-  // Extract company name from homepage content
-  const homepageResult = results[0];
+  return buildResult({
+    url,
+    domain,
+    content: allContent,
+    wordCount,
+    homepageContent,
+  });
+}
+
+function buildResult({
+  url,
+  domain,
+  content,
+  wordCount,
+  homepageContent,
+}: {
+  url: string;
+  domain: string;
+  content: string;
+  wordCount: number;
+  homepageContent: string;
+}): ScrapedData {
   let companyName = domain;
-  if (homepageResult?.status === "fulfilled") {
-    // Try to extract from first heading or title-like content
-    const firstLine = homepageResult.value.split("\n").find((l) => l.startsWith("#"));
-    if (firstLine) {
-      companyName = firstLine.replace(/^#+\s*/, "").split(/[|\-–—]/)[0]?.trim() || domain;
-    }
+  const firstLine = homepageContent
+    .split("\n")
+    .find((l) => l.startsWith("#"));
+  if (firstLine) {
+    companyName =
+      firstLine.replace(/^#+\s*/, "").split(/[|\-–—]/)[0]?.trim() || domain;
   }
 
   return {
     companyName,
     url,
     domain,
-    content: allContent.slice(0, 15000), // More content from multi-page scrape
+    content: content.slice(0, 15000),
     wordCount,
   };
 }
