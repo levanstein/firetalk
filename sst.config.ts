@@ -20,13 +20,23 @@ export default $config({
       access: "cloudfront",
     });
 
-    new sst.aws.Nextjs("FireTalk", {
-      link: [dataBucket],
+    // API keys as SST secrets (set via: npx sst secret set FIRECRAWL_API_KEY <value>)
+    const firecrawlKey = new sst.Secret("FirecrawlApiKey", process.env.FIRECRAWL_API_KEY);
+    const elevenLabsKey = new sst.Secret("ElevenLabsApiKey", process.env.ELEVENLABS_API_KEY);
+
+    const site = new sst.aws.Nextjs("FireTalk", {
+      link: [dataBucket, firecrawlKey, elevenLabsKey],
       environment: {
-        FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY!,
-        ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY!,
+        FIRECRAWL_API_KEY: firecrawlKey.value,
+        ELEVENLABS_API_KEY: elevenLabsKey.value,
         DATA_BUCKET_NAME: dataBucket.name,
       },
+      permissions: [
+        {
+          actions: ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
+          resources: ["*"],
+        },
+      ],
     });
   },
 });
