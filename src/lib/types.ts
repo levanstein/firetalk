@@ -1,9 +1,18 @@
+export interface Source {
+  name: string;
+  url: string;
+  domain: string;
+  excerpt: string;
+  type: "website" | "review";
+}
+
 export interface ScrapedData {
   companyName: string;
   url: string;
   domain: string;
   content: string;
   wordCount: number;
+  sources: Source[];
 }
 
 export interface DebateTurn {
@@ -39,10 +48,12 @@ export interface Debate {
   comparison: ComparisonRow[];
   summary: string;
   audioUrls: string[];
+  sources: Source[];
   votesA: number;
   votesB: number;
   createdAt: string;
   status: "generating" | "complete" | "failed";
+  featured?: boolean;
 }
 
 export interface SSEEvent {

@@ -1,5 +1,5 @@
 import AnthropicBedrock from "@anthropic-ai/bedrock-sdk";
-import type { ScrapedData, DebateScript } from "./types";
+import type { ScrapedData, DebateScript, Source } from "./types";
 
 const anthropic = new AnthropicBedrock({
   awsRegion: process.env.AWS_REGION || "us-east-1",
@@ -40,13 +40,18 @@ Rules:
 - Each turn: 100-130 words for depth
 - The comparison table must have 5-8 criteria covering: Pricing, Core Features, Ease of Use, Scalability, Support/Docs, Target Audience
 - The summary must recommend specific user profiles for each product
-- Speaker names should be "Alex" (Product A analyst) and "Jordan" (Product B analyst)`;
+- Speaker names should be "Alex" (Product A analyst) and "Jordan" (Product B analyst)
+- When review data from independent sources is provided, cite them naturally: "According to [source name]..." or "As noted by [source name]..." — 1-2 citations per speaker across the debate
+- Contrast what products claim on their website vs what independent reviewers actually report`;
 
 export async function generateDebateScript(
   dataA: ScrapedData,
   dataB: ScrapedData,
   onToken?: (token: string) => void
 ): Promise<DebateScript> {
+  const sourcesA = dataA.sources?.filter((s: Source) => s.type === "review").map((s: Source) => `- ${s.name}: ${s.excerpt}`).join("\n") || "No independent reviews found";
+  const sourcesB = dataB.sources?.filter((s: Source) => s.type === "review").map((s: Source) => `- ${s.name}: ${s.excerpt}`).join("\n") || "No independent reviews found";
+
   const userPrompt = `Create a Product Battle comparing these two products:
 
 <product-a-data>
@@ -55,13 +60,21 @@ Company: ${dataA.companyName}
 ${dataA.content}
 </product-a-data>
 
+<product-a-reviews>
+${sourcesA}
+</product-a-reviews>
+
 <product-b-data>
 URL: ${dataB.url}
 Company: ${dataB.companyName}
 ${dataB.content}
 </product-b-data>
 
-Analyze their products deeply. Compare pricing, features, target audience, scalability, and ecosystem. Output the Product Battle script as JSON.`;
+<product-b-reviews>
+${sourcesB}
+</product-b-reviews>
+
+Analyze their products deeply using BOTH their marketing claims AND independent review data. Compare pricing, features, target audience, scalability, and ecosystem. When independent reviews provide a different perspective than marketing claims, highlight that contrast. Output the Product Battle script as JSON.`;
 
   let fullResponse = "";
 
